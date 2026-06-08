@@ -1,0 +1,14 @@
+{
+  "name": "ask_all_ai",
+  "version": "1.0.0",
+  "description": "`Ask All AI` 是一个基于原生 Node.js 和前端技术（HTML/CSS/JS）构建的本地 Web 客户端。它作为命令行工具 [`@jackwener/opencli`](https://github.com/jackwener/opencli) 的可视化图形界面（GUI），支持并发向多个主流大语言模型提问，以便用户直观对比它们的回答内容、响应耗时和生成质量。",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

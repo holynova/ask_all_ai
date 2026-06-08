@@ -1,0 +1,2142 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ask All AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f6f7;
+        --panel: #ffffff;
+        --text: #2c3e50;
+        --muted: #476582;
+        --muted-soft: #90a4ae;
+        --line: #e2e2e3;
+        --line-strong: #c9c9cb;
+        --accent: #42b883;
+        --accent-strong: #338a60;
+        --accent-soft: rgba(66, 184, 131, 0.08);
+        --danger: #c00;
+        --warning: #e7c000;
+        --ok: #42b883;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+        line-height: 1.6;
+        font-size: 16px;
+      }
+
+      .app {
+        width: min(1360px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0 160px;
+      }
+
+      header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 16px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 32px;
+        line-height: 1.2;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .status-line {
+        color: var(--muted);
+        font-size: 14px;
+        white-space: nowrap;
+        font-weight: 500;
+      }
+
+      .composer {
+        position: sticky;
+        bottom: 16px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.03), var(--shadow);
+        z-index: 100;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 118px;
+        resize: vertical;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px 16px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 1.5;
+        outline: none;
+        background: #fff;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(66, 184, 131, 0.12);
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+      }
+
+      .model-control {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .control-label {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .models {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      label.model-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 12px;
+        background: #fff;
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.15s ease;
+      }
+
+      label.model-toggle:hover {
+        border-color: var(--accent);
+      }
+
+      label.model-toggle:has(input:checked) {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+      }
+
+      label.model-toggle input {
+        margin: 0;
+        accent-color: var(--accent);
+      }
+
+      .buttons {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .shortcut-hint {
+        color: var(--muted-soft);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      kbd {
+        display: inline-flex;
+        align-items: center;
+        min-height: 20px;
+        border: 1px solid var(--line-strong);
+        border-radius: 4px;
+        background: var(--bg);
+        padding: 0 5px;
+        color: var(--text);
+        font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+
+      button {
+        height: 36px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 0 16px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      #cancelButton:disabled {
+        display: none;
+      }
+
+      .primary {
+        background: var(--accent);
+        color: #fff;
+        min-width: 94px;
+      }
+
+      .primary:hover:not(:disabled) {
+        background: var(--accent-strong);
+      }
+
+      .secondary {
+        background: #fff;
+        border-color: var(--line);
+        color: var(--text);
+      }
+
+      .secondary:hover:not(:disabled) {
+        border-color: var(--accent);
+        background: var(--bg);
+      }
+
+      .tertiary {
+        background: transparent;
+        border-color: transparent;
+        color: var(--muted);
+        padding: 0 8px;
+      }
+
+      .tertiary:hover:not(:disabled) {
+        color: var(--text);
+        background: var(--line);
+      }
+
+      .diagnostics {
+        margin-top: 20px;
+      }
+
+      .diagnostics > summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 0 16px;
+        color: var(--text);
+        cursor: pointer;
+        list-style: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: border-color 0.15s ease;
+      }
+
+      .diagnostics > summary:hover {
+        border-color: var(--accent);
+      }
+
+      .diagnostics > summary::after {
+        content: "展开";
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .diagnostics > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .diagnostics-title {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .diagnostics-hint {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 400;
+      }
+
+      .diagnostics[open] > summary {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-color: var(--line);
+      }
+
+      .diagnostics[open] > summary::after {
+        content: "收起";
+      }
+
+      .diagnostics-body {
+        border: 1px solid var(--line);
+        border-top: 0;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        background: #fff;
+        padding: 16px;
+      }
+
+      .check-panel {
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .check-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .check-title {
+        font-weight: 600;
+        font-size: 15px;
+      }
+
+      .check-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .update-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .update-item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 12px;
+        min-height: 64px;
+        transition: border-color 0.15s ease;
+      }
+
+      .update-item:hover {
+        border-color: var(--accent);
+      }
+
+      .update-label {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      }
+
+      .update-value {
+        overflow-wrap: anywhere;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .check-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 12px;
+        min-height: 68px;
+        transition: border-color 0.15s ease;
+      }
+
+      .check-card:hover {
+        border-color: var(--accent);
+      }
+
+      .check-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .check-card-top strong {
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .check-output {
+        margin: 0;
+        max-height: 110px;
+        overflow: auto;
+        color: #ebebeb;
+        background: #202024;
+        border-radius: 6px;
+        padding: 10px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .log-details {
+        margin-top: 8px;
+      }
+
+      .log-details summary {
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .update-details {
+        margin-top: 12px;
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+      }
+
+      .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        height: clamp(380px, calc(100vh - 310px), 580px);
+        min-height: 380px;
+        max-height: 580px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        min-height: 48px;
+        padding: 11px 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--bg);
+      }
+
+      .model-name {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        height: 22px;
+        border-radius: 4px;
+        padding: 0 6px;
+        background: var(--line);
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .badge.running {
+        background: rgba(231, 192, 0, 0.12);
+        color: #b7791f;
+      }
+
+      .badge.done {
+        background: rgba(66, 184, 131, 0.15);
+        color: var(--accent-strong);
+      }
+
+      .badge.error {
+        background: rgba(204, 0, 0, 0.08);
+        color: var(--danger);
+      }
+
+      .meta {
+        min-height: 32px;
+        padding: 8px 16px;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .answer {
+        flex: 1;
+        min-height: 0;
+        max-height: 100%;
+        padding: 16px 20px;
+        overflow: auto;
+        overflow-wrap: anywhere;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .answer > :first-child {
+        margin-top: 0;
+      }
+
+      .answer > :last-child {
+        margin-bottom: 0;
+      }
+
+      .answer p {
+        margin: 0 0 16px;
+        color: var(--text);
+      }
+
+      .answer a {
+        color: var(--accent);
+        text-decoration: none;
+        border-bottom: 1px dashed var(--accent);
+        transition: all 0.2s ease;
+      }
+
+      .answer a:hover {
+        color: var(--accent-strong);
+        border-bottom-style: solid;
+      }
+
+      .answer ul,
+      .answer ol {
+        padding-left: 22px;
+        margin: 0 0 16px;
+      }
+
+      .answer li {
+        margin-bottom: 5px;
+        color: var(--text);
+      }
+
+      .answer li + li {
+        margin-top: 4px;
+      }
+
+      .answer h1,
+      .answer h2,
+      .answer h3 {
+        color: var(--text);
+        margin: 28px 0 12px;
+        line-height: 1.3;
+        font-weight: 600;
+      }
+
+      .answer h1 {
+        font-size: 22px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 6px;
+      }
+
+      .answer h2 {
+        font-size: 18px;
+      }
+
+      .answer h3 {
+        font-size: 15.5px;
+      }
+
+      .answer code {
+        border-radius: 4px;
+        background: #f6f6f7;
+        padding: 3px 6px;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 12.5px;
+        color: #476582;
+      }
+
+      .code-block-wrapper {
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        background: #202024;
+        margin: 16px 0;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .code-block-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #1b1b1f;
+        padding: 6px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        user-select: none;
+      }
+
+      .code-block-lang {
+        color: #909399;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 11px;
+        text-transform: lowercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+
+      .copy-code-btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+        color: #ebebeb;
+        font-size: 11px;
+        padding: 2px 8px;
+        height: auto;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+      }
+
+      .copy-code-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .copy-code-btn.copied {
+        background: rgba(66, 184, 131, 0.2);
+        border-color: var(--accent);
+        color: #ebebeb;
+      }
+
+      .answer pre {
+        margin: 0;
+        border: 0;
+        background: transparent;
+        padding: 12px 16px;
+        overflow: auto;
+        white-space: pre;
+      }
+
+      .answer pre code {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: #ebebeb;
+        display: block;
+      }
+
+      .hljs {
+        background: transparent !important;
+        padding: 0 !important;
+      }
+
+      .answer blockquote {
+        border-left: 4px solid var(--accent);
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        padding: 12px 16px;
+        margin: 0 0 16px;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .custom-block {
+        border-left: 4px solid transparent;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin: 16px 0;
+        font-size: 14px;
+      }
+
+      .custom-block.tip {
+        border-color: var(--accent);
+        background-color: var(--accent-soft);
+        color: var(--accent-strong);
+      }
+
+      .custom-block.warning {
+        border-color: var(--warning);
+        background-color: rgba(231, 192, 0, 0.08);
+        color: #b7791f;
+      }
+
+      .custom-block.danger {
+        border-color: var(--danger);
+        background-color: rgba(204, 0, 0, 0.06);
+        color: var(--danger);
+      }
+
+      .custom-block-title {
+        font-weight: 700;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+      }
+
+      .empty {
+        color: var(--muted);
+      }
+
+      @media (max-width: 1100px) {
+        .grid.grid-layout {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .check-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .update-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 680px) {
+        .app {
+          width: min(100% - 20px, 1440px);
+          padding-top: 18px;
+        }
+
+        header {
+          display: block;
+        }
+
+        .status-line {
+          margin-top: 8px;
+          white-space: normal;
+        }
+
+        .controls,
+        .buttons {
+          width: 100%;
+        }
+
+        .controls {
+          align-items: stretch;
+        }
+
+        .model-control {
+          display: block;
+          width: 100%;
+        }
+
+        .control-label {
+          display: block;
+          margin-bottom: 8px;
+        }
+
+        .buttons button {
+          flex: 1;
+        }
+
+        .shortcut-hint {
+          width: 100%;
+        }
+
+        .grid.grid-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .card {
+          height: 410px;
+          max-height: 410px;
+        }
+
+        .check-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .update-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .detail-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* 结果切换视图与 Tab 样式 */
+      .results-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+
+      .view-switcher {
+        display: inline-flex;
+        background: #e2e2e3;
+        padding: 2px;
+        border-radius: 8px;
+        user-select: none;
+      }
+
+      .switcher-btn {
+        height: 28px;
+        padding: 0 12px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--muted);
+        border: 0;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .switcher-btn.active {
+        background: #ffffff;
+        color: var(--text);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      }
+
+      .model-tabs {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 32px;
+        padding: 0 12px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        background: #ffffff;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .tab-btn:hover {
+        border-color: var(--accent);
+        color: var(--text);
+      } 
+
+      .tab-btn.active {
+        background: var(--accent-soft);
+        border-color: var(--accent);
+        color: var(--accent-strong);
+      }
+
+      .tab-btn .tab-badge {
+        height: 18px;
+        font-size: 9px;
+        padding: 0 4px;
+        letter-spacing: 0.2px;
+      }
+
+      .grid.grid-layout {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .grid.tab-layout {
+        display: block;
+      }
+
+      .grid.tab-layout .card {
+        max-width: 960px;
+        margin: 0 auto;
+        height: clamp(400px, calc(100vh - 280px), 640px);
+        max-height: 640px;
+      }
+
+      /* 聊天历史样式 */
+      .chat-message {
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 16px;
+      }
+
+      .chat-message:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+        margin-bottom: 0;
+      }
+
+      .message-sender {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+
+      .chat-message.user .message-sender {
+        color: var(--accent-strong);
+      }
+
+      .chat-message.assistant .message-sender {
+        color: var(--text);
+      }
+
+      .chat-message.user .message-content {
+        color: var(--text);
+        font-weight: 500;
+        background: var(--bg);
+        padding: 8px 12px;
+        border-radius: 8px;
+        display: inline-block;
+        max-width: 100%;
+        line-height: 1.5;
+        font-size: 14px;
+      }
+
+      .chat-message.assistant .message-content {
+        line-height: 1.6;
+      }
+
+      .loading-dots {
+        color: var(--muted);
+        font-style: italic;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <div>
+          <h1>Ask All AI</h1>
+          <p class="subtitle">并发询问多个 AI，直接对比回答。</p>
+        </div>
+        <div id="globalStatus" class="status-line">未开始</div>
+      </header>
+
+
+
+      <!-- 视图与标签切换器 -->
+      <div class="results-header">
+        <div class="view-switcher">
+          <button id="viewGridBtn" class="switcher-btn active" type="button">并排对比</button>
+          <button id="viewTabBtn" class="switcher-btn" type="button">标签页对比</button>
+        </div>
+        <div class="model-tabs" id="modelTabs" style="display: none;"></div>
+      </div>
+
+      <section class="grid grid-layout" aria-label="模型回答对比">
+        <article class="card" data-model="chatgpt">
+          <div class="card-header">
+            <div class="model-name">ChatGPT</div>
+            <div class="badge">待命</div>
+          </div>
+          <div class="meta">耗时：-</div>
+          <div class="answer empty">等待提交问题。</div>
+        </article>
+
+        <article class="card" data-model="gemini">
+          <div class="card-header">
+            <div class="model-name">Gemini</div>
+            <div class="badge">待命</div>
+          </div>
+          <div class="meta">耗时：-</div>
+          <div class="answer empty">等待提交问题。</div>
+        </article>
+
+        <article class="card" data-model="grok">
+          <div class="card-header">
+            <div class="model-name">Grok</div>
+            <div class="badge">待命</div>
+          </div>
+          <div class="meta">耗时：-</div>
+          <div class="answer empty">等待提交问题。</div>
+        </article>
+
+        <article class="card" data-model="deepseek">
+          <div class="card-header">
+            <div class="model-name">DeepSeek</div>
+            <div class="badge">待命</div>
+          </div>
+          <div class="meta">耗时：-</div>
+          <div class="answer empty">等待提交问题。</div>
+        </article>
+      </section>
+
+      <section class="composer">
+        <textarea
+          id="question"
+          maxlength="8000"
+          placeholder="输入你的问题..."
+        ></textarea>
+
+        <div class="controls">
+          <div class="model-control">
+            <div class="control-label">模型</div>
+            <div class="models" aria-label="选择模型">
+              <label class="model-toggle">
+                <input type="checkbox" name="model" value="chatgpt" checked />
+                ChatGPT
+              </label>
+              <label class="model-toggle">
+                <input type="checkbox" name="model" value="gemini" checked />
+                Gemini
+              </label>
+              <label class="model-toggle">
+                <input type="checkbox" name="model" value="grok" checked />
+                Grok
+              </label>
+              <label class="model-toggle">
+                <input type="checkbox" name="model" value="deepseek" checked />
+                DeepSeek
+              </label>
+            </div>
+          </div>
+
+          <div class="buttons">
+            <button id="askButton" class="primary" type="button">开始对比</button>
+            <button id="cancelButton" class="tertiary" type="button" disabled>取消</button>
+            <button id="clearButton" class="tertiary" type="button">清空历史</button>
+            <span class="shortcut-hint"><kbd>⌘</kbd>/<kbd>Ctrl</kbd> <kbd>Enter</kbd> 发送</span>
+          </div>
+        </div>
+      </section>
+
+      <details class="diagnostics">
+        <summary>
+          <span class="diagnostics-title">环境诊断</span>
+          <span class="diagnostics-hint">简明状态，详细日志可展开</span>
+        </summary>
+
+        <div class="diagnostics-body">
+          <section class="check-panel" aria-label="登录检查结果">
+            <div class="check-header">
+              <div class="check-title">OpenCLI 登录检查</div>
+              <div class="buttons">
+                <button id="checkButton" class="secondary" type="button">
+                  检查登录
+                </button>
+                <div id="checkStatus" class="status-line">尚未检查</div>
+              </div>
+            </div>
+
+            <div class="check-grid">
+              <article class="check-card" data-check-model="chatgpt">
+                <div class="check-card-top">
+                  <strong>ChatGPT</strong>
+                  <span class="badge">待检查</span>
+                </div>
+                <details class="log-details">
+                  <summary>日志</summary>
+                  <pre class="check-output">点击“检查登录”运行 opencli chatgpt status。</pre>
+                </details>
+              </article>
+
+              <article class="check-card" data-check-model="gemini">
+                <div class="check-card-top">
+                  <strong>Gemini</strong>
+                  <span class="badge">待检查</span>
+                </div>
+                <details class="log-details">
+                  <summary>日志</summary>
+                  <pre class="check-output">当前 OpenCLI 版本没有 gemini status，将使用 gemini new 检查。</pre>
+                </details>
+              </article>
+
+              <article class="check-card" data-check-model="grok">
+                <div class="check-card-top">
+                  <strong>Grok</strong>
+                  <span class="badge">待检查</span>
+                </div>
+                <details class="log-details">
+                  <summary>日志</summary>
+                  <pre class="check-output">点击“检查登录”运行 opencli grok status。</pre>
+                </details>
+              </article>
+
+              <article class="check-card" data-check-model="deepseek">
+                <div class="check-card-top">
+                  <strong>DeepSeek</strong>
+                  <span class="badge">待检查</span>
+                </div>
+                <details class="log-details">
+                  <summary>日志</summary>
+                  <pre class="check-output">点击“检查登录”运行 opencli deepseek status。</pre>
+                </details>
+              </article>
+            </div>
+          </section>
+
+          <section class="check-panel" aria-label="OpenCLI 更新检查">
+            <div class="check-header">
+              <div class="check-title">OpenCLI 更新</div>
+              <div class="buttons">
+                <button id="updateCheckButton" class="secondary" type="button">
+                  检查更新
+                </button>
+                <button id="upgradeButton" class="primary" type="button" disabled>
+                  一键升级
+                </button>
+              </div>
+            </div>
+
+            <div class="update-grid">
+              <div class="update-item">
+                <div class="update-label">当前版本</div>
+                <div id="currentVersion" class="update-value">-</div>
+              </div>
+              <div class="update-item">
+                <div class="update-label">最新版本</div>
+                <div id="latestVersion" class="update-value">-</div>
+              </div>
+              <div class="update-item">
+                <div class="update-label">结果</div>
+                <div id="updateSummary" class="update-value">尚未检查</div>
+              </div>
+            </div>
+
+            <details class="log-details update-details">
+              <summary>详细信息</summary>
+              <div class="detail-grid">
+                <div class="update-item">
+                  <div class="update-label">安装位置</div>
+                  <div id="opencliPath" class="update-value">-</div>
+                </div>
+                <div class="update-item">
+                  <div class="update-label">升级命令</div>
+                  <div id="upgradeCommand" class="update-value">-</div>
+                </div>
+              </div>
+              <pre id="updateOutput" class="check-output">尚未检查。</pre>
+            </details>
+          </section>
+        </div>
+      </details>
+    </main>
+
+    <script>
+      const modelNames = {
+        chatgpt: "ChatGPT",
+        gemini: "Gemini",
+        grok: "Grok",
+        deepseek: "DeepSeek",
+      };
+
+      const questionInput = document.getElementById("question");
+      const askButton = document.getElementById("askButton");
+      const checkButton = document.getElementById("checkButton");
+      const updateCheckButton = document.getElementById("updateCheckButton");
+      const upgradeButton = document.getElementById("upgradeButton");
+      const cancelButton = document.getElementById("cancelButton");
+      const globalStatus = document.getElementById("globalStatus");
+      const checkStatus = document.getElementById("checkStatus");
+      const currentVersion = document.getElementById("currentVersion");
+      const latestVersion = document.getElementById("latestVersion");
+      const opencliPath = document.getElementById("opencliPath");
+      const upgradeCommand = document.getElementById("upgradeCommand");
+      const updateSummary = document.getElementById("updateSummary");
+      const updateOutput = document.getElementById("updateOutput");
+
+      let eventSource = null;
+      let checkEventSource = null;
+      let currentRequestId = null;
+      let lastUpdateInfo = null;
+      let startedAt = {};
+      let answerBuffers = {};
+      let timer = null;
+      let currentViewMode = "grid";
+      let activeModelTab = null;
+
+      // 聊天历史与队列管理
+      const chatHistories = {
+        chatgpt: [],
+        gemini: [],
+        grok: [],
+        deepseek: []
+      };
+
+      const modelConversations = {
+        chatgpt: "",
+        gemini: "",
+        grok: "",
+        deepseek: ""
+      };
+
+      const modelStates = {
+        chatgpt: 'idle',
+        gemini: 'idle',
+        grok: 'idle',
+        deepseek: 'idle'
+      };
+
+      const modelQueues = {
+        chatgpt: [],
+        gemini: [],
+        grok: [],
+        deepseek: []
+      };
+
+      const activeConnections = {
+        chatgpt: null,
+        gemini: null,
+        grok: null,
+        deepseek: null
+      };
+
+      const activeRequestIds = {
+        chatgpt: null,
+        gemini: null,
+        grok: null,
+        deepseek: null
+      };
+
+      function getSelectedModels() {
+        return Array.from(document.querySelectorAll('input[name="model"]:checked'))
+          .map((input) => input.value);
+      }
+
+      function getCard(model) {
+        return document.querySelector(`[data-model="${model}"]`);
+      }
+
+      function setCardState(model, state, label) {
+        const card = getCard(model);
+        const badge = card.querySelector(".badge");
+        badge.className = `badge ${state || ""}`.trim();
+        badge.textContent = label;
+
+        // 同步更新标签页上的状态徽章
+        const tabBtn = document.querySelector(`.tab-btn[data-tab-model="${model}"]`);
+        if (tabBtn) {
+          const tabBadge = tabBtn.querySelector(".tab-badge");
+          if (tabBadge) {
+            tabBadge.className = `tab-badge badge ${state || ""}`.trim();
+            tabBadge.textContent = label;
+          }
+        }
+      }
+
+      function switchViewMode(mode) {
+        currentViewMode = mode;
+        
+        const gridBtn = document.getElementById("viewGridBtn");
+        const tabBtn = document.getElementById("viewTabBtn");
+        const tabsContainer = document.getElementById("modelTabs");
+        const cardsContainer = document.querySelector(".grid");
+
+        if (mode === "grid") {
+          gridBtn.classList.add("active");
+          tabBtn.classList.remove("active");
+          tabsContainer.style.display = "none";
+          
+          cardsContainer.classList.add("grid-layout");
+          cardsContainer.classList.remove("tab-layout");
+          
+          Object.keys(modelNames).forEach((modelId) => {
+            const card = getCard(modelId);
+            card.style.display = "";
+          });
+        } else {
+          gridBtn.classList.remove("active");
+          tabBtn.classList.add("active");
+          tabsContainer.style.display = "flex";
+          
+          cardsContainer.classList.remove("grid-layout");
+          cardsContainer.classList.add("tab-layout");
+          
+          const selected = getSelectedModels();
+          if (selected.length > 0) {
+            if (!activeModelTab || !selected.includes(activeModelTab)) {
+              activeModelTab = selected[0];
+            }
+            setActiveTab(activeModelTab);
+          } else {
+            Object.keys(modelNames).forEach((modelId) => {
+              getCard(modelId).style.display = "none";
+            });
+          }
+        }
+      }
+
+      function setActiveTab(modelId) {
+        activeModelTab = modelId;
+        
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+          if (btn.dataset.tabModel === modelId) {
+            btn.classList.add("active");
+          } else {
+            btn.classList.remove("active");
+          }
+        });
+
+        Object.keys(modelNames).forEach((id) => {
+          const card = getCard(id);
+          if (id === modelId) {
+            card.style.display = "flex";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      }
+
+      // 同步生成各个模型的 Tab 切换标签页
+      function updateModelTabs(selectedModels) {
+        const tabsContainer = document.getElementById("modelTabs");
+        tabsContainer.innerHTML = "";
+        
+        if (selectedModels.length === 0) return;
+        
+        selectedModels.forEach((modelId) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `tab-btn${modelId === activeModelTab ? " active" : ""}`;
+          btn.dataset.tabModel = modelId;
+          
+          const card = getCard(modelId);
+          const badge = card.querySelector(".badge");
+          const badgeClass = badge ? badge.className.replace("badge", "").trim() : "";
+          const badgeLabel = badge ? badge.textContent : "待命";
+          
+          btn.innerHTML = `
+            <span class="tab-model-name">${modelNames[modelId]}</span>
+            <span class="tab-badge badge ${badgeClass}">${badgeLabel}</span>
+          `;
+          btn.addEventListener("click", () => {
+            setActiveTab(modelId);
+          });
+          tabsContainer.appendChild(btn);
+        });
+
+        if (currentViewMode === "tab" && selectedModels.length > 0) {
+          if (!activeModelTab || !selectedModels.includes(activeModelTab)) {
+            activeModelTab = selectedModels[0];
+          }
+          setActiveTab(activeModelTab);
+        }
+      }
+
+      // 执行队列提问任务
+      function processModelQueue(modelId) {
+        if (modelStates[modelId] === 'running') return;
+        if (modelQueues[modelId].length === 0) {
+          updateGlobalStatus();
+          return;
+        }
+
+        const question = modelQueues[modelId].shift();
+        
+        modelStates[modelId] = 'running';
+        setCardState(modelId, "running", "运行中");
+        updateModelTabs(getSelectedModels());
+
+        startedAt[modelId] = Date.now();
+        setCardMeta(modelId, "耗时：0.0s");
+
+        const isFollowUp = chatHistories[modelId].length > 2;
+        const conversationId = modelConversations[modelId] || "";
+
+        const params = new URLSearchParams({
+          question,
+          models: modelId,
+          new: isFollowUp ? "false" : "true"
+        });
+        if (conversationId) {
+          params.append("conversation", conversationId);
+        }
+
+        const es = new EventSource(`/ask?${params.toString()}`);
+        activeConnections[modelId] = es;
+
+        es.addEventListener("request", (event) => {
+          const data = JSON.parse(event.data);
+          activeRequestIds[modelId] = data.requestId;
+        });
+
+        es.addEventListener("delta", (event) => {
+          const data = JSON.parse(event.data);
+          updateLastAssistantMessage(modelId, data.text, true);
+        });
+
+        es.addEventListener("replace", (event) => {
+          const data = JSON.parse(event.data);
+          updateLastAssistantMessage(modelId, data.text, false);
+        });
+
+        es.addEventListener("model_error", (event) => {
+          const data = JSON.parse(event.data);
+          setCardState(modelId, "error", "错误");
+          updateLastAssistantMessage(modelId, `\n[error] ${data.message}\n`, true);
+        });
+
+        es.addEventListener("model_warning", (event) => {
+          const data = JSON.parse(event.data);
+          updateLastAssistantMessage(modelId, `\n[warning] ${data.message}\n`, true);
+        });
+
+        es.addEventListener("done", (event) => {
+          const data = JSON.parse(event.data);
+          const card = getCard(modelId);
+          const badge = card.querySelector(".badge");
+          if (!badge.classList.contains("error")) {
+            setCardState(modelId, "done", "完成");
+          }
+          setCardMeta(modelId, `耗时：${elapsedSeconds(modelId)}`);
+          if (data.conversationId) {
+            modelConversations[modelId] = data.conversationId;
+          }
+        });
+
+        es.addEventListener("all_done", () => {
+          es.close();
+          activeConnections[modelId] = null;
+          activeRequestIds[modelId] = null;
+          modelStates[modelId] = 'idle';
+          
+          processModelQueue(modelId);
+        });
+
+        es.onerror = () => {
+          es.close();
+          activeConnections[modelId] = null;
+          activeRequestIds[modelId] = null;
+          modelStates[modelId] = 'idle';
+          setCardState(modelId, "error", "断开");
+          updateLastAssistantMessage(modelId, `\n[error] 与服务器的连接意外中断。\n`, true);
+          
+          processModelQueue(modelId);
+        };
+      }
+
+      function updateLastAssistantMessage(modelId, text, append) { 
+        const history = chatHistories[modelId];
+        for (let i = history.length - 1; i >= 0; i--) {
+          if (history[i].role === 'assistant') {
+            if (append) {
+              history[i].text += text;
+            } else {
+              history[i].text = text;
+            }
+            break;
+          }
+        }
+        renderHistory(modelId);
+      }
+
+      function renderHistory(model) {
+        const history = chatHistories[model];
+        const answerContainer = getCard(model).querySelector(".answer");
+        
+        if (history.length === 0) {
+          answerContainer.innerHTML = '<div class="empty">等待提交问题。</div>';
+          answerContainer.classList.add("empty");
+          return;
+        }
+        
+        answerContainer.classList.remove("empty");
+        
+        let html = "";
+        history.forEach((msg) => {
+          if (msg.role === 'user') {
+            html += `
+              <div class="chat-message user">
+                <div class="message-sender">你</div>
+                <div class="message-content">${escapeHtml(msg.text)}</div>
+              </div>
+            `;
+          } else {
+            const contentHtml = msg.text ? markdownToHtml(msg.text) : '<span class="loading-dots">等待回答...</span>';
+            html += `
+              <div class="chat-message assistant">
+                <div class="message-sender">${modelNames[model]}</div>
+                <div class="message-content">${contentHtml}</div>
+              </div>
+            `;
+          }
+        });
+        
+        answerContainer.innerHTML = html;
+        
+        answerContainer.querySelectorAll("pre code").forEach((block) => {
+          try {
+            hljs.highlightElement(block);
+          } catch (e) {
+            console.error(e);
+          }
+        });
+        
+        answerContainer.scrollTop = answerContainer.scrollHeight;
+      }
+
+      function clearHistory() {
+        Object.keys(chatHistories).forEach((id) => {
+          chatHistories[id] = [];
+          modelQueues[id] = [];
+          modelConversations[id] = "";
+          
+          if (activeConnections[id]) {
+            activeConnections[id].close();
+            activeConnections[id] = null;
+          }
+          activeRequestIds[id] = null;
+          modelStates[id] = 'idle';
+          
+          setCardState(id, "", "待命");
+          setCardMeta(id, "耗时：-");
+          renderHistory(id);
+        });
+        
+        updateGlobalStatus();
+        updateModelTabs(getSelectedModels());
+      }
+
+      function updateGlobalStatus() {
+        const runningModels = Object.keys(modelStates).filter(id => modelStates[id] === 'running');
+        const queuedCount = Object.keys(modelQueues).reduce((sum, id) => sum + modelQueues[id].length, 0);
+        
+        if (runningModels.length > 0) {
+          globalStatus.textContent = `生成中 (${runningModels.length}个运行中` + (queuedCount > 0 ? `, ${queuedCount}个问题排队中` : "") + `)...`;
+          cancelButton.disabled = false;
+          
+          if (!timer) {
+            timer = setInterval(refreshTimers, 250);
+          }
+        } else {
+          globalStatus.textContent = "全部就绪";
+          cancelButton.disabled = true;
+          
+          if (timer) {
+            clearInterval(timer);
+            timer = null;
+          }
+        }
+      }
+
+      function setCardMeta(model, text) {
+        getCard(model).querySelector(".meta").textContent = text;
+      }
+
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function renderInlineMarkdown(text) {
+        return escapeHtml(text)
+          .replace(/`([^`]+)`/g, "<code>$1</code>")
+          .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+          .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+          .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+      }
+
+      function parseFence(line) {
+        const match = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+        if (!match) return null;
+        return {
+          marker: match[1][0],
+          length: match[1].length,
+          info: match[2].trim(),
+        };
+      }
+
+      function isClosingFence(line, fence) {
+        const escapedMarker = fence.marker === "`" ? "`" : "~";
+        const pattern = new RegExp(`^ {0,3}${escapedMarker}{${fence.length},}\\s*$`);
+        return pattern.test(line);
+      }
+
+      function flushParagraph(lines, html) {
+        if (lines.length === 0) return;
+        html.push(`<p>${renderInlineMarkdown(lines.join("\n")).replace(/\n/g, "<br>")}</p>`);
+        lines.length = 0;
+      }
+
+      function flushCodeBlock(lines, html, language) {
+        const lang = language ? escapeHtml(language.split(/\s+/)[0]) : "";
+        const langClass = lang ? ` class="language-${lang}"` : "";
+        html.push(`
+          <div class="code-block-wrapper">
+            <div class="code-block-header">
+              <span class="code-block-lang">${lang || "code"}</span>
+              <button class="copy-code-btn" type="button" onclick="copyCodeToClipboard(this)">复制</button>
+            </div>
+            <pre><code${langClass}>${escapeHtml(lines.join("\n"))}</code></pre>
+          </div>
+        `);
+        lines.length = 0;
+      }
+
+      function markdownToHtml(markdown) {
+        const lines = String(markdown || "").replace(/\r\n/g, "\n").split("\n");
+        const html = [];
+        const paragraph = [];
+        let list = null;
+        let codeFence = null;
+        let codeLanguage = "";
+        let codeLines = [];
+
+        function closeList() {
+          if (!list) return;
+          html.push(`</${list}>`);
+          list = null;
+        }
+
+        for (const line of lines) {
+          const fence = parseFence(line);
+          if (fence) {
+            if (codeFence) {
+              if (isClosingFence(line, codeFence)) {
+                flushCodeBlock(codeLines, html, codeLanguage);
+                codeFence = null;
+                codeLanguage = "";
+              } else {
+                codeLines.push(line);
+              }
+            } else {
+              flushParagraph(paragraph, html);
+              closeList();
+              codeFence = fence;
+              codeLanguage = fence.info;
+            }
+            continue;
+          }
+
+          if (codeFence) {
+            codeLines.push(line);
+            continue;
+          }
+
+          const indentedCode = line.match(/^(?: {4}|\t)(.*)$/);
+          if (indentedCode) {
+            flushParagraph(paragraph, html);
+            closeList();
+            codeLines.push(indentedCode[1]);
+            continue;
+          }
+
+          if (codeLines.length > 0) {
+            flushCodeBlock(codeLines, html, "");
+          }
+
+          if (!line.trim()) {
+            flushParagraph(paragraph, html);
+            closeList();
+            continue;
+          }
+
+          const errorMatch = line.match(/^\[error\]\s+(.+)$/i);
+          if (errorMatch) {
+            flushParagraph(paragraph, html);
+            closeList();
+            html.push(`
+              <div class="custom-block danger">
+                <p class="custom-block-title">错误说明</p>
+                <p>${renderInlineMarkdown(errorMatch[1])}</p>
+              </div>
+            `);
+            continue;
+          }
+
+          const warningMatch = line.match(/^\[warning\]\s+(.+)$/i);
+          if (warningMatch) {
+            flushParagraph(paragraph, html);
+            closeList();
+            html.push(`
+              <div class="custom-block warning">
+                <p class="custom-block-title">警告</p>
+                <p>${renderInlineMarkdown(warningMatch[1])}</p>
+              </div>
+            `);
+            continue;
+          }
+
+          const infoMatch = line.match(/^\[info\]\s+(.+)$/i);
+          if (infoMatch) {
+            flushParagraph(paragraph, html);
+            closeList();
+            html.push(`
+              <div class="custom-block tip">
+                <p class="custom-block-title">提示</p>
+                <p>${renderInlineMarkdown(infoMatch[1])}</p>
+              </div>
+            `);
+            continue;
+          }
+
+          const heading = line.match(/^(#{1,3})\s+(.+)$/);
+          if (heading) {
+            flushParagraph(paragraph, html);
+            closeList();
+            html.push(`<h${heading[1].length}>${renderInlineMarkdown(heading[2])}</h${heading[1].length}>`);
+            continue;
+          }
+
+          const unordered = line.match(/^\s*[-*]\s+(.+)$/);
+          const ordered = line.match(/^\s*\d+\.\s+(.+)$/);
+          if (unordered || ordered) {
+            flushParagraph(paragraph, html);
+            const tag = unordered ? "ul" : "ol";
+            if (list !== tag) {
+              closeList();
+              html.push(`<${tag}>`);
+              list = tag;
+            }
+            html.push(`<li>${renderInlineMarkdown((unordered || ordered)[1])}</li>`);
+            continue;
+          }
+
+          const quote = line.match(/^>\s?(.+)$/);
+          if (quote) {
+            flushParagraph(paragraph, html);
+            closeList();
+            html.push(`<blockquote>${renderInlineMarkdown(quote[1])}</blockquote>`);
+            continue;
+          }
+
+          closeList();
+          paragraph.push(line);
+        }
+
+        if (codeFence || codeLines.length > 0) {
+          flushCodeBlock(codeLines, html, codeLanguage);
+        }
+        flushParagraph(paragraph, html);
+        closeList();
+        return html.join("") || "";
+      }
+
+      function setCardAnswer(model, text, isEmpty) {
+        const answer = getCard(model).querySelector(".answer");
+        answerBuffers[model] = text;
+        answer.innerHTML = isEmpty ? escapeHtml(text) : markdownToHtml(text);
+        answer.classList.toggle("empty", Boolean(isEmpty));
+        if (!isEmpty) {
+          answer.querySelectorAll("pre code").forEach((block) => {
+            try {
+              hljs.highlightElement(block);
+            } catch (e) {
+              console.error(e);
+            }
+          });
+        }
+      }
+
+      function getCheckCard(model) {
+        return document.querySelector(`[data-check-model="${model}"]`);
+      }
+
+      function setCheckState(model, state, label) {
+        const card = getCheckCard(model);
+        const badge = card.querySelector(".badge");
+        badge.className = `badge ${state || ""}`.trim();
+        badge.textContent = label;
+      }
+
+      function setCheckOutput(model, text) {
+        getCheckCard(model).querySelector(".check-output").textContent = text;
+      }
+
+      function appendCardAnswer(model, text) {
+        replaceCardAnswer(model, `${answerBuffers[model] || ""}${text}`);
+      }
+
+      function replaceCardAnswer(model, text) {
+        const answer = getCard(model).querySelector(".answer");
+        if (answer.classList.contains("empty")) {
+          answer.classList.remove("empty");
+        }
+        answerBuffers[model] = text;
+        answer.innerHTML = markdownToHtml(text);
+        answer.querySelectorAll("pre code").forEach((block) => {
+          try {
+            hljs.highlightElement(block);
+          } catch (e) {
+            console.error(e);
+          }
+        });
+        answer.scrollTop = answer.scrollHeight;
+      }
+
+      window.copyCodeToClipboard = function (btn) {
+        const pre = btn.closest(".code-block-wrapper").querySelector("pre");
+        const text = pre.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          btn.textContent = "已复制!";
+          btn.classList.add("copied");
+          setTimeout(() => {
+            btn.textContent = "复制";
+            btn.classList.remove("copied");
+          }, 2000);
+        }).catch((err) => {
+          console.error("Failed to copy code: ", err);
+          btn.textContent = "复制失败";
+        });
+      };
+
+      function elapsedSeconds(model) {
+        if (!startedAt[model]) return "-";
+        return `${((Date.now() - startedAt[model]) / 1000).toFixed(1)}s`;
+      }
+
+      function refreshTimers() {
+        for (const model of Object.keys(startedAt)) {
+          const badge = getCard(model).querySelector(".badge");
+          if (badge.classList.contains("running")) {
+            setCardMeta(model, `耗时：${elapsedSeconds(model)}`);
+          }
+        }
+      }
+
+      function setRunning(isRunning) {
+        // 在提问时不再禁用输入框与开始按钮，仅在系统初始化或需要时切换按钮禁用状态
+        checkButton.disabled = isRunning;
+        cancelButton.disabled = !isRunning;
+      }
+
+      function setChecking(isChecking) {
+        checkButton.disabled = isChecking;
+        askButton.disabled = isChecking;
+      }
+
+      function setUpdateBusy(isBusy) {
+        updateCheckButton.disabled = isBusy;
+        upgradeButton.disabled = isBusy || !lastUpdateInfo || !lastUpdateInfo.updateAvailable;
+        askButton.disabled = isBusy;
+        checkButton.disabled = isBusy;
+      }
+
+      function cleanupStream() {
+        if (eventSource) {
+          eventSource.close();
+          eventSource = null;
+        }
+        if (timer) {
+          clearInterval(timer);
+          timer = null;
+        }
+        setRunning(false);
+      }
+
+      function cleanupCheckStream() {
+        if (checkEventSource) {
+          checkEventSource.close();
+          checkEventSource = null;
+        }
+        setChecking(false);
+      }
+
+      function handleSse(eventName, handler) {
+        eventSource.addEventListener(eventName, (event) => {
+          handler(JSON.parse(event.data));
+        });
+      }
+
+      function handleCheckSse(eventName, handler) {
+        checkEventSource.addEventListener(eventName, (event) => {
+          handler(JSON.parse(event.data));
+        });
+      }
+
+      function renderUpdateInfo(info) {
+        lastUpdateInfo = info;
+        currentVersion.textContent = info.currentVersion || "-";
+        latestVersion.textContent = info.latestVersion || "-";
+        opencliPath.textContent = info.opencliPath || "-";
+        upgradeCommand.textContent = info.upgradeCommand || "-";
+        upgradeButton.disabled = !info.updateAvailable;
+
+        if (!info.ok) {
+          updateSummary.textContent = "检查失败";
+          updateOutput.textContent = "检查失败。请确认 npm 和 opencli 可用。";
+          return;
+        }
+
+        updateSummary.textContent = info.updateAvailable ? "可升级" : "已是最新";
+        updateOutput.textContent = info.updateAvailable
+          ? `发现新版本：${info.currentVersion} -> ${info.latestVersion}`
+          : `已是最新版本：${info.currentVersion}`;
+      }
+
+      async function checkOpenCliUpdate() {
+        setUpdateBusy(true);
+        updateSummary.textContent = "检查中...";
+        updateOutput.textContent = "正在检查 npm 最新版本...";
+
+        try {
+          const response = await fetch("/check-opencli-update");
+          const data = await response.json();
+          renderUpdateInfo(data);
+        } catch (error) {
+          updateSummary.textContent = "检查失败";
+          updateOutput.textContent = `检查失败：${error.message}`;
+        } finally {
+          setUpdateBusy(false);
+        }
+      }
+
+      async function upgradeOpenCli() {
+        if (!lastUpdateInfo || !lastUpdateInfo.updateAvailable) return;
+
+        setUpdateBusy(true);
+        updateSummary.textContent = "升级中...";
+        updateOutput.textContent = `正在执行：${lastUpdateInfo.upgradeCommand}`;
+
+        try {
+          const response = await fetch("/upgrade-opencli", { method: "POST" });
+          const data = await response.json();
+
+          if (data.after) {
+            renderUpdateInfo(data.after);
+          }
+
+          const output = [
+            data.ok ? "升级完成。" : "升级失败。",
+            data.upgrade ? `命令：${data.upgrade.command}` : "",
+            data.before ? `升级前：${data.before.currentVersion}` : "",
+            data.after ? `升级后：${data.after.currentVersion}` : "",
+            data.upgrade && data.upgrade.result.stdout ? data.upgrade.result.stdout.trim() : "",
+            data.upgrade && data.upgrade.result.stderr ? data.upgrade.result.stderr.trim() : "",
+            data.error || "",
+          ]
+            .filter(Boolean)
+            .join("\n\n");
+
+          updateOutput.textContent = output;
+          updateSummary.textContent = data.ok ? "升级完成" : "升级失败";
+        } catch (error) {
+          updateSummary.textContent = "升级失败";
+          updateOutput.textContent = `升级失败：${error.message}`;
+        } finally {
+          setUpdateBusy(false);
+        }
+      }
+
+      function checkLogins() {
+        cleanupCheckStream();
+        setChecking(true);
+        checkStatus.textContent = "正在检查...";
+        const checkResults = {};
+
+        for (const model of Object.keys(modelNames)) {
+          setCheckState(model, "running", "检查中");
+          setCheckOutput(model, "等待 opencli 返回...");
+        }
+
+        checkEventSource = new EventSource("/check-logins");
+
+        handleCheckSse("check_start", (data) => {
+          setCheckState(data.model, "running", "检查中");
+          const note = data.note ? `\n${data.note}` : "";
+          setCheckOutput(data.model, `${data.command}${note}`);
+        });
+
+        handleCheckSse("check_result", (data) => {
+          const duration = `${(data.durationMs / 1000).toFixed(1)}s`;
+          const output = [
+            data.stdout.trim(),
+            data.stderr.trim(),
+            data.error.trim(),
+            data.note.trim(),
+          ]
+            .filter(Boolean)
+            .join("\n\n");
+
+          setCheckState(data.model, data.ok ? "done" : "error", data.ok ? "通过" : "失败");
+          checkResults[data.model] = data.ok;
+          const checkedCount = Object.keys(checkResults).length;
+          const okCount = Object.values(checkResults).filter(Boolean).length;
+          checkStatus.textContent = `${okCount}/${checkedCount} 通过`;
+          setCheckOutput(
+            data.model,
+            [
+              `耗时：${duration}`,
+              `退出码：${data.exitCode === null ? "-" : data.exitCode}`,
+              output || "无输出",
+            ].join("\n")
+          );
+        });
+
+        handleCheckSse("check_all_done", () => {
+          const okCount = Object.values(checkResults).filter(Boolean).length;
+          checkStatus.textContent = `${okCount}/${Object.keys(modelNames).length} 通过`;
+          cleanupCheckStream();
+        });
+
+        checkEventSource.onerror = () => {
+          checkStatus.textContent = "检查连接已中断。";
+          cleanupCheckStream();
+        };
+      }
+
+      function ask() {
+        const question = questionInput.value.trim();
+        const selectedModels = getSelectedModels();
+
+        if (!question) {
+          globalStatus.textContent = "请输入问题。";
+          questionInput.focus();
+          return;
+        }
+
+        if (selectedModels.length === 0) {
+          globalStatus.textContent = "请至少选择一个模型。";
+          return;
+        }
+
+        // 清空输入框，方便立刻进行下一次提问
+        questionInput.value = "";
+
+        selectedModels.forEach((modelId) => {
+          // 初始化聊天历史结构
+          chatHistories[modelId].push({ role: 'user', text: question });
+          chatHistories[modelId].push({ role: 'assistant', text: '' });
+          renderHistory(modelId);
+
+          // 加入当前模型的队列
+          modelQueues[modelId].push(question);
+
+          if (modelStates[modelId] === 'running') {
+            setCardState(modelId, "running", `排队中 (${modelQueues[modelId].length})`);
+          } else {
+            processModelQueue(modelId);
+          }
+        });
+
+        updateGlobalStatus();
+      }
+
+      async function cancel() {
+        // 清除队列
+        Object.keys(modelQueues).forEach((id) => {
+          modelQueues[id] = [];
+        });
+
+        const idsToCancel = [];
+        Object.keys(activeRequestIds).forEach((id) => {
+          if (activeRequestIds[id]) {
+            idsToCancel.push(activeRequestIds[id]);
+            activeRequestIds[id] = null;
+          }
+        });
+
+        // 断开所有活动连接并标记为取消
+        Object.keys(activeConnections).forEach((id) => {
+          if (activeConnections[id]) {
+            activeConnections[id].close();
+            activeConnections[id] = null;
+          }
+          if (modelStates[id] === 'running') {
+            modelStates[id] = 'idle';
+            setCardState(id, "error", "已取消");
+            updateLastAssistantMessage(id, `\n[error] 提问已被取消。\n`, true);
+          }
+        });
+
+        updateGlobalStatus();
+
+        // 异步向服务器发起取消进程请求
+        for (const requestId of idsToCancel) {
+          try {
+            await fetch(`/cancel?requestId=${encodeURIComponent(requestId)}`, {
+              method: "POST",
+            });
+          } catch (e) {
+            console.error("Failed to cancel request on server: ", e);
+          }
+        }
+      }
+
+      updateCheckButton.addEventListener("click", checkOpenCliUpdate);
+      upgradeButton.addEventListener("click", upgradeOpenCli);
+      checkButton.addEventListener("click", checkLogins);
+      askButton.addEventListener("click", ask);
+      cancelButton.addEventListener("click", cancel);
+      document.getElementById("clearButton").addEventListener("click", clearHistory);
+
+      document.getElementById("viewGridBtn").addEventListener("click", () => switchViewMode("grid"));
+      document.getElementById("viewTabBtn").addEventListener("click", () => switchViewMode("tab"));
+
+      // 监听模型勾选状态，实时增删 tab 标签
+      document.querySelectorAll('input[name="model"]').forEach((input) => {
+        input.addEventListener("change", () => {
+          updateModelTabs(getSelectedModels());
+        });
+      });
+
+      // 初始化页面时生成默认选中的标签页
+      updateModelTabs(getSelectedModels());
+      document.addEventListener("keydown", (event) => {
+        const key = event.key.toLowerCase();
+        const commandKey = event.metaKey || event.ctrlKey;
+
+        if (commandKey && key === "enter") {
+          event.preventDefault();
+          ask();
+          return;
+        }
+
+        if (commandKey && key === "k") {
+          event.preventDefault();
+          questionInput.focus();
+          return;
+        }
+
+        if (event.key === "Escape" && !cancelButton.disabled) {
+          event.preventDefault();
+          cancel();
+        }
+      });
+    </script>
+  </body>
+</html>
