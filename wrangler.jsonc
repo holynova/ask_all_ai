@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ask-all-ai",
+  "compatibility_date": "2026-09-04",
+  "workers_dev": false,
+  "assets": {
+    "directory": "."
+  },
+  "routes": [
+    {
+      "pattern": "ask-all-ai.xiaosang.cc",
+      "custom_domain": true
+    }
+  ]
+}
